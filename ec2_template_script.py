@@ -5,51 +5,17 @@ import paramiko
 from botocore.exceptions import ClientError
 
 # AWS configuration
-AWS_REGION = 'us-west-2'
-KEY_NAME = 'work-steve'
-LAUNCH_TEMPLATE_ID = 'lt-0d41438011c9d7cc8'
+#AWS_REGION = 'us-west-2'
+AWS_REGION = 'ap-southeast-1'
+#KEY_NAME = 'work-steve'
+KEY_NAME = 'sonnguyen'
+LAUNCH_TEMPLATE_ID = 'lt-064789a5a9e169f89'
 
 # SSH configuration
 SSH_CONFIG_PATH = os.path.expanduser('~/.ssh/config')
 HOST_ALIAS = 'ec2'
-KEY_FILE_PATH = "/home/work-steve.pem"
-
-def describe_security_groups(client):
-    try:
-        security_groups = client.describe_security_groups()
-        # print("Security groups described successfully:")
-        # for sg in security_groups['SecurityGroups']:
-        #     #print(f"- {sg['GroupName']} (ID: {sg['GroupId']})")
-    except ClientError as e:
-        print(f"Failed to describe security groups: {e}")
-
-def create_ec2_instance(client):
-    try:
-        response = client.run_instances(
-            LaunchTemplate={
-                'LaunchTemplateId': LAUNCH_TEMPLATE_ID
-            },
-            MinCount=1,
-            MaxCount=1,
-            KeyName=KEY_NAME
-        )
-
-        instance = response['Instances'][0]
-        instance_id = instance['InstanceId']
-
-        print('Waiting for instance to enter running state...')
-        waiter = client.get_waiter('instance_running')
-        waiter.wait(InstanceIds=[instance_id])
-
-        instance_info = client.describe_instances(InstanceIds=[instance_id])
-        hostname = instance_info['Reservations'][0]['Instances'][0]['PublicDnsName']
-
-        print(f"Instance created with hostname: {hostname}")
-        return hostname
-
-    except ClientError as e:
-        print(f"An error occurred: {e}")
-        return None
+#KEY_FILE_PATH = "/home/work-steve.pem"
+KEY_FILE_PATH = "/home/son/.ssh/id_rsa"
 
 def update_ssh_config(hostname):
     config_entry = f"""
@@ -107,21 +73,3 @@ def connect_via_ssh(hostname):
     except Exception as e:
         print(f"Failed to connect via SSH: {e}")
         
-def main():
-    client = boto3.client('ec2', region_name=AWS_REGION)
-
-    # Describe security groups
-    describe_security_groups(client)
-
-    # Create EC2 instance
-    hostname = create_ec2_instance(client)
-    if hostname:
-        print(f'Instance created successfully with hostname: {hostname}')
-        update_ssh_config(hostname)
-        print(f'SSH config updated with hostname: {hostname}')
-        connect_via_ssh(hostname)
-    else:
-        print("Failed to create EC2 instance.")
-
-if __name__ == '__main__':
-    main()
