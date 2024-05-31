@@ -130,7 +130,7 @@ def main():
     hostname = ""
     
     st.title("AWS EC2 Launch Templates")
-    name = st.text_input("", placeholder="Type name to tag instance", key="name_input")
+    name = st.text_input("Type in here the tag Name of instace",placeholder="Type name to tag instance", key="name_input")
     st.button("Check Instance State", key="check_button")
     check = check_instance_state(name)
     st.write(f"Instance state: {check}, Instance ID: {get_instance_id(name)}")
