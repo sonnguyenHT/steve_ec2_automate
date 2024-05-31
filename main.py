@@ -131,7 +131,6 @@ def main():
     
     st.title("AWS EC2 Launch Templates")
     name = st.text_input("", placeholder="Type name to tag instance", key="name_input")
-    st.write(name)
     st.button("Check Instance State", key="check_button")
     check = check_instance_state(name)
     st.write(f"Instance state: {check}, Instance ID: {get_instance_id(name)}")
@@ -146,11 +145,31 @@ def main():
     if st.button("Run Script", key="run_script_button"):
         if check == 'running':
             run_script(hostname)
+            # chech init state of instance
+            # ec2_client.describe_instance_status(
+            #         Filters=[
+            #             {
+            #                 'Name': 'string',
+            #                 'Values': [
+            #                     name,
+            #                 ]
+            #             },
+            #         ],
+            # )
         else:
             st.write("Instance is not ready to run script")
     
     if check == 'running':
         print("Instance is running")
+        instance_state = ec2_client.describe_instance_status(
+            InstanceIds=[
+                instance_id,
+            ]
+        )['InstanceStatuses'][0]['SystemStatus']['Details'][0]['Status']
+        if instance_state == 'passed':
+            st.write("Instance is ready to run script")
+        else:
+            st.write("Instance is not ready to run script")
         if st.button("Stop Instance", key="stop_button"):
             stop_instance(st.session_state['instance_id'])
     elif check == "stopped":
